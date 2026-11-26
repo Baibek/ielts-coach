@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Calm, paper-like palette. Light and dark are chosen separately. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f5f1;
+  --foreground: #1d2125;
+  --card: #ffffff;
+  --card-foreground: #1d2125;
+  --muted: #eeede8;
+  --muted-foreground: #5f656c;
+  --border: #e2e0d9;
+  --input: #d6d4cc;
+  --primary: #0f6b62;
+  --primary-foreground: #ffffff;
+  --accent: #e3efec;
+  --accent-foreground: #0b4f48;
+  --danger: #b42318;
+  --success: #15803d;
+  --ring: #0f6b62;
+
+  /* Chart series (validated categorical order: blue, orange, aqua, yellow) */
+  --series-listening: #257de0;
+  --series-reading: #f47230;
+  --series-writing: #00b894;
+  --series-speaking: #f2a600;
+  --chart-grid: #e7e5df;
+  --chart-axis: #8a8f95;
+}
+
+.dark {
+  --background: #111416;
+  --foreground: #e7e9ea;
+  --card: #181c1f;
+  --card-foreground: #e7e9ea;
+  --muted: #1f2427;
+  --muted-foreground: #9aa1a7;
+  --border: #2a3034;
+  --input: #353c41;
+  --primary: #3fb8a8;
+  --primary-foreground: #0c1513;
+  --accent: #1c2d2b;
+  --accent-foreground: #9fe0d6;
+  --danger: #f97066;
+  --success: #4ade80;
+  --ring: #3fb8a8;
+
+  --series-listening: #338ced;
+  --series-reading: #e76624;
+  --series-writing: #00a888;
+  --series-speaking: #d28e05;
+  --chart-grid: #2a3034;
+  --chart-axis: #7d858b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-ring: var(--ring);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+* {
+  border-color: var(--border);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
