@@ -1,6 +1,6 @@
 import "server-only";
 import { aiJson, LANGUAGE_NAME } from "@/lib/ai/server";
-import { markPlanTaskDone } from "@/lib/data/queries";
+import { afterDiagnostic, markPlanTaskDone } from "@/lib/data/queries";
 import type { Profile } from "@/lib/data/types";
 import type { TaskKind } from "@/lib/plan/engine";
 import type { createClient } from "@/lib/supabase/server";
@@ -30,7 +30,7 @@ export type SpeakingFeedback = Omit<SpeakingScore, "corrections"> & {
 export type SpeakingRow = {
   id: string;
   part: SpeakingPart;
-  mode: "practice" | "exam";
+  mode: "practice" | "exam" | "diagnostic";
   status: "pending" | "scored";
   set_ids: string[];
   answers: AnswerRecord[];
@@ -58,8 +58,8 @@ export async function pickSets(supabase: DB, part: SpeakingPart, after?: string[
     return list[(idx + 1) % list.length];
   };
   return {
-    p1: part === 1 || part === 0 ? pick(PART1_BANK, after?.find((id) => id.startsWith("s1-"))) : null,
-    p2: part === 2 || part === 3 || part === 0 ? pick(PART2_BANK, after?.find((id) => id.startsWith("s2-"))) : null,
+    p1: part === 1 || part === 0 || part === 4 ? pick(PART1_BANK, after?.find((id) => id.startsWith("s1-"))) : null,
+    p2: part !== 1 ? pick(PART2_BANK, after?.find((id) => id.startsWith("s2-"))) : null,
   };
 }
 
@@ -94,6 +94,7 @@ const PLAN_KINDS: Record<SpeakingPart, TaskKind[]> = {
   1: ["speaking_p1"],
   2: ["speaking_p2"],
   3: ["speaking_p3"],
+  4: ["diag_speaking"],
 };
 
 function mockScore(answers: AnswerRecord[]): SpeakingScore {
@@ -155,7 +156,7 @@ export async function scoreSession(supabase: DB, profile: Profile, row: Speaking
   if (!attemptId) {
     const { data, error } = await supabase
       .from("attempts")
-      .insert({ skill: "speaking", type: row.mode === "exam" ? "timed" : "practice", band: scores.overall, duration_sec: duration, meta: { part: row.part, session_id: row.id } })
+      .insert({ skill: "speaking", type: row.mode === "diagnostic" ? "diagnostic" : row.mode === "exam" ? "timed" : "practice", band: scores.overall, duration_sec: duration, meta: { part: row.part, session_id: row.id } })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -176,6 +177,7 @@ export async function scoreSession(supabase: DB, profile: Profile, row: Speaking
     ),
   );
   await markPlanTaskDone(supabase, profile, PLAN_KINDS[row.part]);
+  if (row.mode === "diagnostic") await afterDiagnostic(supabase, profile);
 }
 
 /** Id for a new practice session (the row is created when the student presses Start). */

@@ -10,11 +10,11 @@ import {
   scoreSession, scriptFor, SPEAKING_COLUMNS, transcribeAnswer, type SpeakingRow,
 } from "@/lib/speaking/service";
 
-const Part = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
+const Part = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4)]);
 
 export async function startSpeaking(input: { id: string; part: number; mode: string; setIds: string[] }): Promise<{ ok: boolean }> {
   const parsed = z
-    .object({ id: z.uuid(), part: Part, mode: z.enum(["practice", "exam"]), setIds: z.array(z.string().max(20)).min(1).max(2) })
+    .object({ id: z.uuid(), part: Part, mode: z.enum(["practice", "exam", "diagnostic"]), setIds: z.array(z.string().max(20)).min(1).max(2) })
     .safeParse(input);
   if (!parsed.success || parsed.data.setIds.some((s) => !findSpeakingSet(s))) return { ok: false };
   const { id, part, mode, setIds } = parsed.data;

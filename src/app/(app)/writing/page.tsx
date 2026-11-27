@@ -18,13 +18,13 @@ export const maxDuration = 60;
 export default async function WritingPage({ searchParams }: PageProps<"/writing">) {
   const sp = await searchParams;
   const task = sp.task === "task1" || sp.task === "task2" ? (sp.task as WritingTask) : null;
-  const mode = sp.mode === "exam" ? "exam" : "practice";
+  const mode = sp.diag === "1" ? "diagnostic" : sp.mode === "exam" ? "exam" : "practice";
   const pid = typeof sp.pid === "string" ? sp.pid : undefined;
   const after = typeof sp.after === "string" ? sp.after : undefined;
   return task ? <Session task={task} mode={mode} pid={pid} after={after} /> : <Hub />;
 }
 
-async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "practice" | "exam"; pid?: string; after?: string }) {
+async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "practice" | "exam" | "diagnostic"; pid?: string; after?: string }) {
   const { supabase, profile } = await getSession();
   const t = makeT(getDict(profile.locale));
   const prompt = pid ? await getPromptById(supabase, pid) : await nextPrompt(supabase, task, after);
@@ -40,15 +40,15 @@ async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "p
           <h1 className="text-xl font-semibold">{t(task === "task1" ? "writing.task1" : "writing.task2")}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div role="group" className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium">
+          {mode === "diagnostic" ? <Badge>{t("nav.diagnostic")}</Badge> : <div role="group" className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium">
             {(["practice", "exam"] as const).map((m) => (
               <Link key={m} href={href(m)} aria-current={m === mode ? "true" : undefined}
                 className={cn("rounded-md px-3 py-1.5 text-muted-foreground", m === mode && "bg-accent text-accent-foreground")}>
                 {t(m === "practice" ? "writing.practice" : "writing.exam")}
               </Link>
             ))}
-          </div>
-          {prompt && (
+          </div>}
+          {prompt && mode !== "diagnostic" && (
             <Button asChild variant="outline" size="sm">
               <Link href={`/writing?task=${task}&mode=${mode}&after=${encodeURIComponent(prompt.id)}`}>
                 <Shuffle /> {t("writing.newPrompt")}
@@ -66,7 +66,7 @@ async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "p
             <CardDescription>{t("writing.noPrompts")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <GenerateButton task={task} mode={mode} variant="default" />
+            <GenerateButton task={task} mode={mode === "exam" ? "exam" : "practice"} variant="default" />
           </CardContent>
         </Card>
       )}

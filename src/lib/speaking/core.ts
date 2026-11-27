@@ -3,7 +3,7 @@ import { z } from "zod";
 import { CORRECTION_CATEGORIES } from "@/lib/writing/schemas";
 import type { CueCard, Part1Set, Part2Set } from "./bank";
 
-export type SpeakingPart = 0 | 1 | 2 | 3; // 0 = full test
+export type SpeakingPart = 0 | 1 | 2 | 3 | 4; // 0 = full test, 4 = Parts 1–2 (diagnostic)
 export type ScriptItem = {
   part: 1 | 2 | 3;
   question: string;
@@ -17,8 +17,8 @@ export const MAX_SEC = { 1: 45, 2: 120, 3: 75 } as const;
 
 export function buildScript(part: SpeakingPart, p1: Part1Set | null, p2: Part2Set | null): ScriptItem[] {
   const items: ScriptItem[] = [];
-  if ((part === 1 || part === 0) && p1) {
-    const qs = part === 0 ? p1.questions.slice(0, 4) : p1.questions;
+  if ((part === 1 || part === 0 || part === 4) && p1) {
+    const qs = part === 1 ? p1.questions : p1.questions.slice(0, 4);
     qs.forEach((q, i) =>
       items.push({
         part: 1,
@@ -28,7 +28,7 @@ export function buildScript(part: SpeakingPart, p1: Part1Set | null, p2: Part2Se
       }),
     );
   }
-  if ((part === 2 || part === 0) && p2) {
+  if ((part === 2 || part === 0 || part === 4) && p2) {
     items.push({
       part: 2,
       question: p2.cue.topic,

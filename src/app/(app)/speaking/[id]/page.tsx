@@ -29,8 +29,8 @@ export default async function SpeakingResultPage({ params, searchParams }: PageP
   const urlOf = (p?: string | null) => (p ? signed?.find((s) => s.path === p)?.signedUrl ?? null : null);
   const fb = row.feedback;
   const sc = row.scores;
-  const partLabel = row.part === 0 ? t("speaking.full") : t("speaking.partN", { n: row.part });
-  const partKey = row.part === 0 ? "full" : String(row.part);
+  const partLabel = row.part === 0 ? t("speaking.full") : row.part === 4 ? t("nav.diagnostic") : t("speaking.partN", { n: row.part });
+  const partKey = row.part === 0 ? "full" : row.part === 4 ? "diag" : String(row.part);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">

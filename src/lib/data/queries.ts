@@ -130,3 +130,13 @@ export async function markPlanTaskDone(supabase: DB, profile: Profile, kinds: Ta
     }
   }
 }
+
+/** After a diagnostic part: once all four skills are measured, rebuild the plan from real bands. */
+export async function afterDiagnostic(supabase: DB, profile: Profile): Promise<void> {
+  if (!profile.exam_date) return;
+  const attempts = await getAttempts(supabase);
+  if (!diagnosticDone(attempts)) return;
+  const plan = await getLatestPlan(supabase);
+  const hasDiagTasks = plan?.days.some((d) => d.tasks.some((t) => t.kind.startsWith("diag_")));
+  if (!plan || hasDiagTasks) await rebuildPlan(supabase, { ...profile, exam_date: profile.exam_date }, attempts, plan);
+}

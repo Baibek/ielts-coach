@@ -22,10 +22,11 @@ function mmss(sec: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-type Props = { sessionId: string; userId: string; part: SpeakingPart; mode: "practice" | "exam"; setIds: string[]; script: ScriptItem[] };
+type Props = { sessionId: string; userId: string; part: SpeakingPart; mode: "practice" | "exam" | "diagnostic"; setIds: string[]; script: ScriptItem[] };
 
 export function SpeakingSession({ sessionId, userId, part, mode, setIds, script }: Props) {
   const { t } = useI18n();
+  const examLike = mode !== "practice";
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("idle");
   const [index, setIndex] = useState(0);
@@ -129,10 +130,10 @@ export function SpeakingSession({ sessionId, userId, part, mode, setIds, script 
       }
       await speak([it.intro, it.question].filter(Boolean).join(" "));
       if (indexRef.current !== i || phaseRef.current !== "examiner") return;
-      if (mode === "exam") await startRecording();
+      if (examLike) await startRecording();
       else setPhase("ready");
     },
-    [mode, script, startRecording],
+    [examLike, script, startRecording],
   );
 
   const goTo = useCallback(
@@ -156,13 +157,13 @@ export function SpeakingSession({ sessionId, userId, part, mode, setIds, script 
       return { ...s, [i]: { url: URL.createObjectURL(rec.blob), durationSec: rec.durationSec, status: "saving" } };
     });
     upload(i, rec.blob, rec.durationSec);
-    if (mode === "exam") {
+    if (examLike) {
       if (i === script.length - 1) void finish();
       else goTo(i + 1);
     } else {
       setPhase("review");
     }
-  }, [finish, goTo, mode, script.length, upload]);
+  }, [examLike, finish, goTo, script.length, upload]);
 
   // Timers: Part 2 preparation countdown and the recording clock / level meter.
   useEffect(() => {

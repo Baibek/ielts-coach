@@ -36,7 +36,8 @@ function fmt(sec: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "practice" | "exam" }) {
+export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "practice" | "exam" | "diagnostic" }) {
+  const timed = mode !== "practice";
   const { t } = useI18n();
   const router = useRouter();
   const draftKey = `ielts:draft:${prompt.id}:${mode}`;
@@ -67,7 +68,7 @@ export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "
 
   const elapsed = startedAt && now ? (now - startedAt) / 1000 : 0;
   const remaining = limit - elapsed;
-  const timeUp = mode === "exam" && startedAt !== null && remaining <= 0;
+  const timeUp = timed && startedAt !== null && remaining <= 0;
   const words = countWords(text);
 
   const submit = useCallback(
@@ -120,12 +121,12 @@ export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "
           <span
             className={cn(
               "flex items-center gap-1.5 text-sm font-semibold tabular-nums",
-              mode === "exam" && remaining < 300 && "text-danger",
+              timed && remaining < 300 && "text-danger",
             )}
             data-testid="timer"
           >
             <Clock className="size-4" />
-            {startedAt === null ? "--:--" : mode === "exam" ? fmt(remaining) : fmt(elapsed)}
+            {startedAt === null ? "--:--" : timed ? fmt(remaining) : fmt(elapsed)}
           </span>
           <span className={cn("text-sm tabular-nums", words < min ? "text-muted-foreground" : "font-medium text-success")} data-testid="word-count">
             {t("writing.words", { n: words })} · {t("writing.minWords", { n: min })}

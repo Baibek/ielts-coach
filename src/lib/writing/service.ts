@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { aiJson, LANGUAGE_NAME } from "@/lib/ai/server";
-import { markPlanTaskDone } from "@/lib/data/queries";
+import { afterDiagnostic, markPlanTaskDone } from "@/lib/data/queries";
 import type { Profile } from "@/lib/data/types";
 import type { TaskKind } from "@/lib/plan/engine";
 import type { createClient } from "@/lib/supabase/server";
@@ -21,7 +21,7 @@ export type WritingFeedback = Omit<WritingScore, "corrections"> & { corrections:
 export type SubmissionRow = {
   id: string;
   task: WritingTask;
-  mode: "practice" | "exam";
+  mode: "practice" | "exam" | "diagnostic";
   prompt: WritingPrompt;
   text: string;
   word_count: number;
@@ -135,9 +135,9 @@ export async function generatePrompt(supabase: DB, task: WritingTask): Promise<s
   return `gen:${data.id}`;
 }
 
-const PLAN_KINDS: Record<WritingTask, Record<"practice" | "exam", TaskKind[]>> = {
-  task1: { practice: ["writing_task1", "writing_task1_timed"], exam: ["writing_task1_timed", "writing_task1"] },
-  task2: { practice: ["writing_task2", "writing_task2_timed"], exam: ["writing_task2_timed", "writing_task2"] },
+const PLAN_KINDS: Record<WritingTask, Record<"practice" | "exam" | "diagnostic", TaskKind[]>> = {
+  task1: { practice: ["writing_task1", "writing_task1_timed"], exam: ["writing_task1_timed", "writing_task1"], diagnostic: [] },
+  task2: { practice: ["writing_task2", "writing_task2_timed"], exam: ["writing_task2_timed", "writing_task2"], diagnostic: ["diag_writing"] },
 };
 
 /** Run the AI examiner on a saved submission, store the result, attempt and error log. */
@@ -175,7 +175,7 @@ export async function scoreSubmission(supabase: DB, profile: Profile, sub: Submi
       .from("attempts")
       .insert({
         skill: "writing",
-        type: sub.mode === "exam" ? "timed" : "practice",
+        type: sub.mode === "diagnostic" ? "diagnostic" : sub.mode === "exam" ? "timed" : "practice",
         band: scores.overall,
         duration_sec: sub.duration_sec,
         test_id: sub.test_id,
@@ -208,4 +208,5 @@ export async function scoreSubmission(supabase: DB, profile: Profile, sub: Submi
     ),
   );
   await markPlanTaskDone(supabase, profile, PLAN_KINDS[sub.task][sub.mode]);
+  if (sub.mode === "diagnostic") await afterDiagnostic(supabase, profile);
 }

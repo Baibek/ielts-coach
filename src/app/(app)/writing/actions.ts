@@ -12,7 +12,7 @@ import {
 
 const SubmitInput = z.object({
   promptId: z.string().min(1).max(80),
-  mode: z.enum(["practice", "exam"]),
+  mode: z.enum(["practice", "exam", "diagnostic"]),
   text: z.string().max(20_000),
   durationSec: z.number().int().min(0).max(4 * 3600),
 });

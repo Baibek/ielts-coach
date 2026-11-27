@@ -6,8 +6,8 @@ Russian and English. Exam content is in English.
 
 Everything runs on free tiers: Vercel, Supabase, Groq and Google Gemini.
 
-> **Status:** done: sign-in, database, dashboard, study plan, settings, **Writing** and **Speaking**.
-> Reading, Listening, Error Log, Vocabulary, Tutor and Mock exam come next.
+> **Status:** done: sign-in, database, dashboard, study plan, settings, **Writing**, **Speaking**, **Reading**,
+> **Listening** and the **Diagnostic**. The Error Log, Vocabulary, Tutor and Mock exam come next.
 > Their pages show "Coming soon" until then.
 
 ---
@@ -174,6 +174,20 @@ After changing a variable in Vercel, open **Deployments → ⋯ → Redeploy**, 
     question, and fillers ("um") and long pauses counted.
   - Recordings are kept privately in Supabase Storage. The Speaking page lets you replay your first and latest
     Part 2 to hear your progress.
+- **Reading:** one passage (untimed or 20 minutes) or a full 60-minute test with 3 passages.
+  - Question types: True/False/Not Given, Yes/No/Not Given, multiple choice, matching headings, matching, and
+    sentence/summary completion.
+  - The passage and the questions sit side by side on a laptop; on a phone you switch between them.
+  - After submitting, the sentence that proves each answer is highlighted in the passage. You also get the paraphrase,
+    the trap, and the raw score converted to a band.
+- **Listening:** one part (practice: pause and replay; exam mode: plays once, with time to read the questions first)
+  or a full test (Parts 1–4).
+  - The script is read aloud with different English voices from your device.
+  - Your mistakes are counted by type: spelling, plural -s, numbers, distractors, word limit.
+- **Diagnostic:** four short tests (Listening, Reading, Writing Task 2, Speaking Parts 1–2). When all four are done,
+  the plan is rebuilt from your real bands.
+- New Reading passages and Listening parts are created by AI and saved. Every answer key is checked against the text
+  first: a question whose answer is not in the passage is never shown.
 - **Settings:** language, light/dark theme, language of AI explanations, exam details, today's AI usage per provider,
   sign out.
 
