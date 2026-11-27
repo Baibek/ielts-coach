@@ -6,8 +6,8 @@ Russian and English. Exam content is in English.
 
 Everything runs on free tiers: Vercel, Supabase, Groq and Google Gemini.
 
-> **Status:** Days 1–2 are done: sign-in, database, dashboard, study plan, settings, and the **Writing** module.
-> Speaking, Reading, Listening, Error Log, Vocabulary, Tutor and Mock exam come next.
+> **Status:** done: sign-in, database, dashboard, study plan, settings, **Writing** and **Speaking**.
+> Reading, Listening, Error Log, Vocabulary, Tutor and Mock exam come next.
 > Their pages show "Coming soon" until then.
 
 ---
@@ -163,6 +163,17 @@ After changing a variable in Vercel, open **Deployments → ⋯ → Redeploy**, 
     to fix. Your mistakes are grouped by type in the Error Log.
   - If the AI limit is reached, your answer is still saved. Press **Score now** later.
   - Your draft is kept on the device, so a reload doesn't lose it.
+- **Speaking:**
+  - Part 1, Part 2 (cue card, 1-minute preparation timer, up to 2 minutes of talking), Part 3, or a full test.
+  - The examiner reads the questions aloud using your browser's voice. You answer into the microphone.
+    Use Chrome, Edge or Safari, and headphones.
+  - **Practice** shows the question text and lets you re-record. **Exam mode** is listen-only, like the real test.
+  - Each answer is saved as you go, then turned into text: Groq Whisper if you have a Groq key, otherwise Gemini.
+  - You get the four criteria. Pronunciation is clearly marked as an *estimate*, made from the transcript, pace and
+    pauses. You also see your transcript with corrections, better phrases, a Band 8 model answer for every
+    question, and fillers ("um") and long pauses counted.
+  - Recordings are kept privately in Supabase Storage. The Speaking page lets you replay your first and latest
+    Part 2 to hear your progress.
 - **Settings:** language, light/dark theme, language of AI explanations, exam details, today's AI usage per provider,
   sign out.
 
