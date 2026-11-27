@@ -119,3 +119,20 @@ export async function runAiCheck() {
   const { checkAi } = await import("@/lib/ai/check");
   return checkAi();
 }
+
+export type PasswordFormState = { ok?: boolean; error?: "short" | "mismatch" | "reauth" | "generic" };
+
+/** Lets the student sign in with email + password instead of waiting for an email code. */
+export async function setPassword(_prev: PasswordFormState, form: FormData): Promise<PasswordFormState> {
+  const password = String(form.get("password") ?? "");
+  const repeat = String(form.get("repeat") ?? "");
+  if (password.length < 8 || password.length > 72) return { error: "short" };
+  if (password !== repeat) return { error: "mismatch" };
+  const { supabase } = await getSession();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (!error || error.code === "same_password") return { ok: true };
+  if (error.code === "reauthentication_needed") return { error: "reauth" };
+  if (error.code === "weak_password") return { error: "short" };
+  console.error("set password failed", error.message);
+  return { error: "generic" };
+}

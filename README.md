@@ -117,7 +117,9 @@ Then start it:
 npm run dev
 ```
 
-Open http://localhost:3000, enter your email, and type the code you receive.
+Open http://localhost:3000, choose **Email code**, enter your email and type the code you receive.
+Then go to **Settings → Password** and set a password. From then on, sign in with your email and password (your
+browser and phone can remember it), with no waiting for emails.
 
 `GROQ_API_KEY` and `GEMINI_API_KEY` never reach the browser: they have no `NEXT_PUBLIC_` prefix, and only server
 code uses them. The Supabase publishable key is meant to be public, because Row Level Security protects your data.

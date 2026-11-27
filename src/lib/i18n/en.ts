@@ -430,6 +430,22 @@ export const en = {
   "mock.preparing": "Preparing the report…",
   "mock.badge": "Mock exam",
   "mock.backToMock": "Back to the mock exam",
+  "login.tabPassword": "Password",
+  "login.tabCode": "Email code",
+  "login.password": "Password",
+  "login.signIn": "Sign in",
+  "login.signingIn": "Signing in…",
+  "login.passwordHint": "No password yet? Sign in once with an email code, then set one in Settings.",
+  "login.err.password": "Wrong email or password.",
+  "settings.password": "Password",
+  "settings.passwordHint": "Set a password to sign in without waiting for an email code. Your browser can remember it.",
+  "settings.newPassword": "New password (at least 8 characters)",
+  "settings.repeatPassword": "Repeat the password",
+  "settings.savePassword": "Save password",
+  "settings.passwordSaved": "Password saved. Next time sign in with your email and this password.",
+  "settings.err.short": "Use at least 8 characters.",
+  "settings.err.mismatch": "The two passwords do not match.",
+  "settings.err.reauth": "For security, sign out, sign in again with an email code, then set the password.",
 } as const;
 
 export type MessageKey = keyof typeof en;

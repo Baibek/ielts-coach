@@ -56,3 +56,22 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+export type PasswordState = { email: string; error?: "notAllowed" | "password" | "email" | "rate" | "generic" };
+
+export async function signInPassword(_prev: PasswordState, form: FormData): Promise<PasswordState> {
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const password = String(form.get("password") ?? "");
+  if (!EMAIL_RE.test(email)) return { email, error: "email" };
+  if (!isEmailAllowed(email)) return { email, error: "notAllowed" };
+  if (!password) return { email, error: "password" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    if (error.status === 429) return { email, error: "rate" };
+    if (error.status === 400 || error.code === "invalid_credentials") return { email, error: "password" };
+    return { email, error: "generic" };
+  }
+  redirect(safeNext(String(form.get("next") ?? "/")));
+}

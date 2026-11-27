@@ -9,6 +9,7 @@ import { LanguageSwitch } from "@/components/app/language-switch";
 import { ThemeSwitch } from "@/components/app/theme-switch";
 import { FeedbackLangSelect } from "@/components/app/feedback-lang-select";
 import { AiCheck } from "@/components/app/ai-check";
+import { PasswordForm } from "@/components/app/password-form";
 import { setLocale, updateExamSettings } from "../actions";
 import { signOut } from "@/app/login/actions";
 
@@ -99,6 +100,16 @@ export default async function SettingsPage() {
           <div className="mt-4">
             <AiCheck />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.password")}</CardTitle>
+          <CardDescription>{t("settings.passwordHint")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PasswordForm email={user.email ?? ""} />
         </CardContent>
       </Card>
 
