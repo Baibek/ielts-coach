@@ -31,11 +31,12 @@ export type SubmissionRow = {
   feedback: WritingFeedback | null;
   attempt_id: string | null;
   test_id: string | null;
+  mock_id: string | null;
   created_at: string;
 };
 
 export const SUBMISSION_COLUMNS =
-  "id, task, mode, prompt, text, word_count, duration_sec, status, scores, feedback, attempt_id, test_id, created_at";
+  "id, task, mode, prompt, text, word_count, duration_sec, status, scores, feedback, attempt_id, test_id, mock_id, created_at";
 
 const GEN_KIND = { task1: "task1_prompt", task2: "task2_prompt" } as const;
 
@@ -175,7 +176,8 @@ export async function scoreSubmission(supabase: DB, profile: Profile, sub: Submi
       .from("attempts")
       .insert({
         skill: "writing",
-        type: sub.mode === "diagnostic" ? "diagnostic" : sub.mode === "exam" ? "timed" : "practice",
+        type: sub.mock_id ? "mock" : sub.mode === "diagnostic" ? "diagnostic" : sub.mode === "exam" ? "timed" : "practice",
+        mock_id: sub.mock_id,
         band: scores.overall,
         duration_sec: sub.duration_sec,
         test_id: sub.test_id,
@@ -207,6 +209,6 @@ export async function scoreSubmission(supabase: DB, profile: Profile, sub: Submi
       }),
     ),
   );
-  await markPlanTaskDone(supabase, profile, PLAN_KINDS[sub.task][sub.mode]);
+  if (!sub.mock_id) await markPlanTaskDone(supabase, profile, PLAN_KINDS[sub.task][sub.mode]);
   if (sub.mode === "diagnostic") await afterDiagnostic(supabase, profile);
 }

@@ -26,6 +26,7 @@ type Props = {
   variant: "single" | "full";
   tests: TestView[];
   timeLimitSec: number | null;
+  mockId?: string;
 };
 
 function mmss(sec: number) {
@@ -41,7 +42,7 @@ function readDraft(key: string): Answers {
   }
 }
 
-export function ObjectiveTest({ skill, mode, variant, tests, timeLimitSec }: Props) {
+export function ObjectiveTest({ skill, mode, variant, tests, timeLimitSec, mockId }: Props) {
   const { t } = useI18n();
   const draftKey = `ielts:obj:${skill}:${tests.map((x) => x.id).join("+")}`;
   const allNumbers = useMemo(() => tests.flatMap((x) => x.groups.flatMap((g) => g.questions.map((q) => q.n))), [tests]);
@@ -100,6 +101,7 @@ export function ObjectiveTest({ skill, mode, variant, tests, timeLimitSec }: Pro
           const res = await submitObjective({
             skill, mode, variant, testIds: tests.map((x) => x.id), answers: Object.fromEntries(Object.entries(answers).map(([k, v]) => [k, v])),
             durationSec: Math.round(elapsed),
+            mockId,
           });
           if (res?.error) {
             submitted.current = false;
@@ -112,7 +114,7 @@ export function ObjectiveTest({ skill, mode, variant, tests, timeLimitSec }: Pro
         }
       });
     },
-    [allNumbers, answers, draftKey, elapsed, mode, skill, t, tests, variant],
+    [allNumbers, answers, draftKey, elapsed, mockId, mode, skill, t, tests, variant],
   );
 
   // Time limit: submit automatically, like the computer-delivered test.

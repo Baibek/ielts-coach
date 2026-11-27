@@ -21,10 +21,17 @@ export type SessionConfig = {
   parts?: number[];
   timeLimitSec: number | null;
   title: MessageKey;
+  mockId?: string;
 };
 
 export function sessionConfig(skill: Skill, sp: SP): SessionConfig | null {
   const diag = sp.diag === "1";
+  const mockId = typeof sp.mock === "string" && /^[0-9a-f-]{36}$/.test(sp.mock) ? sp.mock : undefined;
+  if (mockId) {
+    return skill === "reading"
+      ? { mode: "timed", variant: "full", count: 3, timeLimitSec: 60 * 60, title: "mock.badge", mockId }
+      : { mode: "timed", variant: "full", count: 4, parts: [1, 2, 3, 4], timeLimitSec: null, title: "mock.badge", mockId };
+  }
   if (skill === "reading") {
     if (diag) return { mode: "diagnostic", variant: "single", count: 1, timeLimitSec: 20 * 60, title: "nav.diagnostic" };
     if (sp.mode === "full") return { mode: "timed", variant: "full", count: 3, timeLimitSec: 60 * 60, title: "obj.fullReading" };
@@ -65,7 +72,7 @@ export async function ObjectiveSession({ skill, config }: { skill: Skill; config
     <div className="flex flex-col gap-4">
       <header className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon" aria-label={t("common.back")}>
-          <Link href={config.mode === "diagnostic" ? "/diagnostic" : `/${skill}`}><ArrowLeft /></Link>
+          <Link href={config.mockId ? "/mock" : config.mode === "diagnostic" ? "/diagnostic" : `/${skill}`}><ArrowLeft /></Link>
         </Button>
         <h1 className="text-xl font-semibold">{t(skill === "reading" ? "nav.reading" : "nav.listening")} · {t(config.title)}</h1>
       </header>
@@ -79,7 +86,7 @@ export async function ObjectiveSession({ skill, config }: { skill: Skill; config
           </CardContent>
         </Card>
       ) : (
-        <ObjectiveTest key={tests.map((x) => x.id).join("+")} skill={skill} mode={config.mode} variant={config.variant} tests={toView(tests)} timeLimitSec={config.timeLimitSec} />
+        <ObjectiveTest key={tests.map((x) => x.id).join("+")} skill={skill} mode={config.mode} variant={config.variant} tests={toView(tests)} timeLimitSec={config.timeLimitSec} mockId={config.mockId} />
       )}
     </div>
   );

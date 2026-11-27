@@ -15,6 +15,7 @@ const Input = z.object({
   durationSec: z.number().int().min(0).max(4 * 3600),
   mode: z.enum(["practice", "timed", "diagnostic"]),
   variant: z.enum(["single", "full"]),
+  mockId: z.uuid().optional(),
 });
 
 const PLAN: Record<string, TaskKind[]> = {
@@ -31,7 +32,7 @@ const PLAN: Record<string, TaskKind[]> = {
 export async function submitObjective(input: z.infer<typeof Input>): Promise<{ error?: string }> {
   const parsed = Input.safeParse(input);
   if (!parsed.success) return { error: "generic" };
-  const { skill, testIds, answers, durationSec, mode, variant } = parsed.data;
+  const { skill, testIds, answers, durationSec, mode, variant, mockId } = parsed.data;
   const { supabase, profile } = await getSession();
   const tests = (await Promise.all(testIds.map((id) => loadTest(supabase, id)))).filter(Boolean) as LoadedTest[];
   if (tests.length !== testIds.length || tests.some((t) => t.skill !== skill)) return { error: "generic" };
@@ -42,7 +43,8 @@ export async function submitObjective(input: z.infer<typeof Input>): Promise<{ e
     .from("attempts")
     .insert({
       skill,
-      type: mode,
+      type: mockId ? "mock" : mode,
+      mock_id: mockId ?? null,
       raw_score: r.raw,
       max_score: r.total,
       band: r.band,
@@ -54,11 +56,15 @@ export async function submitObjective(input: z.infer<typeof Input>): Promise<{ e
     .single();
   if (error || !data) return { error: "generic" };
 
-  const key = mode === "diagnostic" ? `${skill}:diagnostic` : variant === "full" ? `${skill}:full` : `${skill}:single:${mode}`;
+  const key = mockId ? "" : mode === "diagnostic" ? `${skill}:diagnostic` : variant === "full" ? `${skill}:full` : `${skill}:single:${mode}`;
   await markPlanTaskDone(supabase, profile, PLAN[key] ?? []);
   if (mode === "diagnostic") await afterDiagnostic(supabase, profile);
   revalidatePath(`/${skill}`);
   revalidatePath("/");
+  if (mockId) {
+    revalidatePath("/mock");
+    redirect("/mock");
+  }
   redirect(`/${skill}/attempt/${data.id}`);
 }
 

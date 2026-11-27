@@ -6,9 +6,8 @@ Russian and English. Exam content is in English.
 
 Everything runs on free tiers: Vercel, Supabase, Groq and Google Gemini.
 
-> **Status:** done: sign-in, database, dashboard, study plan, settings, **Writing**, **Speaking**, **Reading**,
-> **Listening** and the **Diagnostic**. The Error Log, Vocabulary, Tutor and Mock exam come next.
-> Their pages show "Coming soon" until then.
+> **Status:** every module works: Writing, Speaking, Reading, Listening, Diagnostic, Error Log, Vocabulary,
+> AI tutor and Mock exam, plus the dashboard, study plan and settings.
 
 ---
 
@@ -33,10 +32,19 @@ On your computer: **Node.js 20 or newer** (https://nodejs.org, the "LTS" button)
    - Region: **Europe** → **Central EU (Frankfurt)**, the closest to Kazakhstan. The app's server on Vercel also
      runs in Frankfurt (set in `vercel.json`), so the app and the database stay close.
 2. Wait about a minute for the project to start. Then open **SQL Editor → New query**.
-3. Open the folder `supabase/migrations/` in this project. For **each file, in name order**
-   (`20261126000000_init.sql`, then `20261127000000_writing.sql`, …), copy **all** of it, paste it into the editor
-   and press **Run**. You should see "Success. No rows returned" each time.
-   When a later update adds a new file to this folder, run just that new file the same way.
+3. Open the folder `supabase/migrations/` in this project. Run **each file, in this order**: copy **all** of it,
+   paste it into the editor and press **Run**. You should see "Success. No rows returned" each time.
+   1. `20261126000000_init.sql`
+   2. `20261127000000_writing.sql`
+   3. `20261127100000_speaking.sql`
+   4. `20261127200000_grants.sql`
+   5. `20261128000000_ai_usage_error.sql`
+   6. `20261128100000_speaking_answer_fn.sql`
+   7. `20261128200000_diagnostic.sql`
+   8. `20261128300000_mock.sql`
+
+   When a later update adds a new file to this folder, run just that new file the same way. Running a file twice
+   shows an error such as "already exists", which is harmless.
 4. Open **Project Settings → API Keys** and copy:
    - **Project URL** (looks like `https://abcd.supabase.co`). It's under *Project Settings → Data API*.
    - **Publishable key** (starts with `sb_publishable_`). On older projects this is the `anon` key; that works too.
@@ -188,6 +196,20 @@ After changing a variable in Vercel, open **Deployments → ⋯ → Redeploy**, 
   the plan is rebuilt from your real bands.
 - New Reading passages and Listening parts are created by AI and saved. Every answer key is checked against the text
   first: a question whose answer is not in the passage is never shown.
+- **Error Log:** every mistake from Writing and Speaking, grouped by type and counted when it comes back. Mark one as
+  fixed, turn it into a flashcard, or ask the tutor about it.
+- **Vocabulary:** flashcards with SM-2 spaced repetition: Again / Hard / Good / Easy, and each card shows when it
+  comes back next.
+  - A 30-card starter deck of IELTS collocations with Kazakh and Russian translations.
+  - Add your own word (AI fills in the meaning, example and translations) or a 10-word topic pack from AI.
+- **AI tutor:** a chat that knows your bands, exam date, today's plan, your most repeated mistakes and your latest
+  essay feedback. It asks you to try first, then explains. Ask in Kazakh, Russian or English. History syncs between
+  devices.
+- **Mock exam:** Listening (Parts 1–4), then Reading (3 passages, 60 min), then Writing Task 1 (20 min) and Task 2
+  (40 min), then Speaking (full test).
+  - You can take breaks between sections.
+  - The report shows the band per skill and overall, the change since your previous mock, and the top 3 things to fix
+    this week.
 - **Settings:** language, light/dark theme, language of AI explanations, exam details, today's AI usage per provider,
   sign out.
 

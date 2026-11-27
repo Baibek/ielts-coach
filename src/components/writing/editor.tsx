@@ -36,7 +36,7 @@ function fmt(sec: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "practice" | "exam" | "diagnostic" }) {
+export function WritingEditor({ prompt, mode, mockId }: { prompt: WritingPrompt; mode: "practice" | "exam" | "diagnostic"; mockId?: string }) {
   const timed = mode !== "practice";
   const { t } = useI18n();
   const router = useRouter();
@@ -84,14 +84,17 @@ export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "
       start(async () => {
         let res;
         try {
-          res = await submitWriting({ promptId: prompt.id, mode, text, durationSec: Math.round(elapsed) });
+          res = await submitWriting({ promptId: prompt.id, mode, text, durationSec: Math.round(elapsed), mockId });
         } catch {
           // Network drop or server time-out: the text is still in the draft.
           submitted.current = false;
           setError("down");
           return;
         }
-        if (res.id) {
+        if (res.id && mockId) {
+          writeDraft(draftKey, null);
+          router.push("/mock");
+        } else if (res.id) {
           writeDraft(draftKey, null);
           const q = res.error ? `?error=${res.error}${res.detail ? `&detail=${encodeURIComponent(res.detail)}` : ""}` : "";
           router.push(`/writing/${res.id}${q}`);
@@ -102,7 +105,7 @@ export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "
         }
       });
     },
-    [words, min, t, prompt.id, mode, text, elapsed, draftKey, router],
+    [words, min, t, prompt.id, mode, text, elapsed, draftKey, router, mockId],
   );
 
   // Exam mode: like the computer-delivered test, the answer is sent when time runs out.

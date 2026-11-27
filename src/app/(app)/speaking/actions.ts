@@ -12,15 +12,15 @@ import {
 
 const Part = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4)]);
 
-export async function startSpeaking(input: { id: string; part: number; mode: string; setIds: string[] }): Promise<{ ok: boolean }> {
+export async function startSpeaking(input: { id: string; part: number; mode: string; setIds: string[]; mockId?: string }): Promise<{ ok: boolean }> {
   const parsed = z
-    .object({ id: z.uuid(), part: Part, mode: z.enum(["practice", "exam", "diagnostic"]), setIds: z.array(z.string().max(20)).min(1).max(2) })
+    .object({ id: z.uuid(), part: Part, mode: z.enum(["practice", "exam", "diagnostic"]), setIds: z.array(z.string().max(20)).min(1).max(2), mockId: z.uuid().optional() })
     .safeParse(input);
   if (!parsed.success || parsed.data.setIds.some((s) => !findSpeakingSet(s))) return { ok: false };
-  const { id, part, mode, setIds } = parsed.data;
+  const { id, part, mode, setIds, mockId } = parsed.data;
   const { supabase } = await getSession();
   const answers = scriptFor(part, setIds);
-  const { error } = await supabase.from("speaking_sessions").insert({ id, part, mode, set_ids: setIds, answers, questions: answers.map((a) => a.question), status: "pending" });
+  const { error } = await supabase.from("speaking_sessions").insert({ id, part, mode, set_ids: setIds, mock_id: mockId ?? null, answers, questions: answers.map((a) => a.question), status: "pending" });
   return { ok: !error };
 }
 

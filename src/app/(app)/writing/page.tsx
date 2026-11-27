@@ -21,10 +21,11 @@ export default async function WritingPage({ searchParams }: PageProps<"/writing"
   const mode = sp.diag === "1" ? "diagnostic" : sp.mode === "exam" ? "exam" : "practice";
   const pid = typeof sp.pid === "string" ? sp.pid : undefined;
   const after = typeof sp.after === "string" ? sp.after : undefined;
-  return task ? <Session task={task} mode={mode} pid={pid} after={after} /> : <Hub />;
+  const mockId = typeof sp.mock === "string" && /^[0-9a-f-]{36}$/.test(sp.mock) ? sp.mock : undefined;
+  return task ? <Session task={task} mode={mockId ? "exam" : mode} pid={pid} after={after} mockId={mockId} /> : <Hub />;
 }
 
-async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "practice" | "exam" | "diagnostic"; pid?: string; after?: string }) {
+async function Session({ task, mode, pid, after, mockId }: { task: WritingTask; mode: "practice" | "exam" | "diagnostic"; pid?: string; after?: string; mockId?: string }) {
   const { supabase, profile } = await getSession();
   const t = makeT(getDict(profile.locale));
   const prompt = pid ? await getPromptById(supabase, pid) : await nextPrompt(supabase, task, after);
@@ -35,12 +36,12 @@ async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "p
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="icon" aria-label={t("common.back")}>
-            <Link href="/writing"><ArrowLeft /></Link>
+            <Link href={mockId ? "/mock" : "/writing"}><ArrowLeft /></Link>
           </Button>
           <h1 className="text-xl font-semibold">{t(task === "task1" ? "writing.task1" : "writing.task2")}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {mode === "diagnostic" ? <Badge>{t("nav.diagnostic")}</Badge> : <div role="group" className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium">
+          {mockId ? <Badge>{t("mock.badge")}</Badge> : mode === "diagnostic" ? <Badge>{t("nav.diagnostic")}</Badge> : <div role="group" className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium">
             {(["practice", "exam"] as const).map((m) => (
               <Link key={m} href={href(m)} aria-current={m === mode ? "true" : undefined}
                 className={cn("rounded-md px-3 py-1.5 text-muted-foreground", m === mode && "bg-accent text-accent-foreground")}>
@@ -48,7 +49,7 @@ async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "p
               </Link>
             ))}
           </div>}
-          {prompt && mode !== "diagnostic" && (
+          {prompt && mode !== "diagnostic" && !mockId && (
             <Button asChild variant="outline" size="sm">
               <Link href={`/writing?task=${task}&mode=${mode}&after=${encodeURIComponent(prompt.id)}`}>
                 <Shuffle /> {t("writing.newPrompt")}
@@ -59,7 +60,7 @@ async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "p
       </header>
 
       {prompt ? (
-        <WritingEditor key={`${prompt.id}:${mode}`} prompt={prompt} mode={mode} />
+        <WritingEditor key={`${prompt.id}:${mode}`} prompt={prompt} mode={mode} mockId={mockId} />
       ) : (
         <Card>
           <CardHeader>
@@ -70,7 +71,7 @@ async function Session({ task, mode, pid, after }: { task: WritingTask; mode: "p
           </CardContent>
         </Card>
       )}
-      {prompt && mode === "practice" && (
+      {prompt && mode === "practice" && !mockId && (
         <div className="max-w-xs">
           <GenerateButton task={task} mode={mode} />
         </div>

@@ -15,6 +15,7 @@ const SubmitInput = z.object({
   mode: z.enum(["practice", "exam", "diagnostic"]),
   text: z.string().max(20_000),
   durationSec: z.number().int().min(0).max(4 * 3600),
+  mockId: z.uuid().optional(),
 });
 
 export type SubmitResult = { id?: string; error?: AiErrorCode | "too_short" | "bad_prompt" | "generic"; detail?: string };
@@ -22,7 +23,7 @@ export type SubmitResult = { id?: string; error?: AiErrorCode | "too_short" | "b
 export async function submitWriting(input: z.infer<typeof SubmitInput>): Promise<SubmitResult> {
   const parsed = SubmitInput.safeParse(input);
   if (!parsed.success) return { error: "generic" };
-  const { promptId, mode, text, durationSec } = parsed.data;
+  const { promptId, mode, text, durationSec, mockId } = parsed.data;
   if (countWords(text) < 20) return { error: "too_short" };
 
   const { supabase, profile } = await getSession();
@@ -39,6 +40,7 @@ export async function submitWriting(input: z.infer<typeof SubmitInput>): Promise
       word_count: countWords(text),
       duration_sec: durationSec,
       status: "pending",
+      mock_id: mockId ?? null,
       test_id: promptId.startsWith("gen:") ? promptId.slice(4) : null,
     })
     .select(SUBMISSION_COLUMNS)

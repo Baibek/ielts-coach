@@ -21,13 +21,14 @@ export default async function SpeakingPage({ searchParams }: PageProps<"/speakin
   const part = typeof sp.part === "string" ? PARTS[sp.part] : undefined;
   const mode = sp.part === "diag" ? "diagnostic" : sp.mode === "exam" ? "exam" : "practice";
   const after = typeof sp.after === "string" ? sp.after.split(",") : undefined;
-  return part === undefined ? <Hub /> : <Session part={part} mode={mode} after={after} />;
+  const mockId = typeof sp.mock === "string" && /^[0-9a-f-]{36}$/.test(sp.mock) ? sp.mock : undefined;
+  return part === undefined ? <Hub /> : <Session part={mockId ? 0 : part} mode={mockId ? "exam" : mode} after={after} mockId={mockId} />;
 }
 
 const partKey = (p: SpeakingPart) => (p === 0 ? "full" : p === 4 ? "diag" : String(p));
 const partLabel = (p: SpeakingPart) => (p === 0 ? "speaking.full" : p === 4 ? "nav.diagnostic" : (`speaking.part${p as 1 | 2 | 3}` as const));
 
-async function Session({ part, mode, after }: { part: SpeakingPart; mode: "practice" | "exam" | "diagnostic"; after?: string[] }) {
+async function Session({ part, mode, after, mockId }: { part: SpeakingPart; mode: "practice" | "exam" | "diagnostic"; after?: string[]; mockId?: string }) {
   const { supabase, profile, user } = await getSession();
   const t = makeT(getDict(profile.locale));
   const { p1, p2 } = await pickSets(supabase, part, after);
@@ -40,12 +41,12 @@ async function Session({ part, mode, after }: { part: SpeakingPart; mode: "pract
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="icon" aria-label={t("common.back")}>
-            <Link href="/speaking"><ArrowLeft /></Link>
+            <Link href={mockId ? "/mock" : "/speaking"}><ArrowLeft /></Link>
           </Button>
           <h1 className="text-xl font-semibold">{t(partLabel(part))}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {mode !== "diagnostic" && <div role="group" className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium">
+          {mode !== "diagnostic" && !mockId && <div role="group" className="inline-flex rounded-lg border bg-card p-0.5 text-xs font-medium">
             {(["practice", "exam"] as const).map((m) => (
               <Link key={m} href={href(m)} aria-current={m === mode ? "true" : undefined}
                 className={cn("rounded-md px-3 py-1.5 text-muted-foreground", m === mode && "bg-accent text-accent-foreground")}>
@@ -58,7 +59,7 @@ async function Session({ part, mode, after }: { part: SpeakingPart; mode: "pract
           </Button>
         </div>
       </header>
-      <SpeakingSession key={`${setIds.join(",")}:${mode}`} sessionId={newSessionId()} userId={user.id} part={part} mode={mode} setIds={setIds} script={script} />
+      <SpeakingSession key={`${setIds.join(",")}:${mode}`} sessionId={newSessionId()} userId={user.id} part={part} mode={mode} setIds={setIds} script={script} mockId={mockId} />
     </div>
   );
 }

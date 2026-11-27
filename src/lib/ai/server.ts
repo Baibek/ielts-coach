@@ -71,3 +71,16 @@ export function aiErrorDetail(e: unknown): string | undefined {
 }
 
 export const LANGUAGE_NAME = { kk: "Kazakh", ru: "Russian", en: "English" } as const;
+
+/** Free-text chat call (tutor) with a mock reply for AI_MOCK=1. */
+export async function aiText(
+  supabase: DB,
+  req: { feature: string; messages: Array<{ role: "system" | "user" | "assistant"; content: string }>; maxTokens?: number; mock: () => string },
+): Promise<string> {
+  if (isMockAi()) {
+    await new Promise((r) => setTimeout(r, 300));
+    await usageLogger(supabase)({ provider: "mock", model: "mock", feature: req.feature, tokensIn: 0, tokensOut: 0, ok: true });
+    return req.mock();
+  }
+  return getAi(supabase).text({ feature: req.feature, messages: req.messages, maxTokens: req.maxTokens ?? 1200, temperature: 0.5 });
+}

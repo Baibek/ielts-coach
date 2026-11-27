@@ -22,9 +22,9 @@ function mmss(sec: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-type Props = { sessionId: string; userId: string; part: SpeakingPart; mode: "practice" | "exam" | "diagnostic"; setIds: string[]; script: ScriptItem[] };
+type Props = { sessionId: string; userId: string; part: SpeakingPart; mode: "practice" | "exam" | "diagnostic"; setIds: string[]; script: ScriptItem[]; mockId?: string };
 
-export function SpeakingSession({ sessionId, userId, part, mode, setIds, script }: Props) {
+export function SpeakingSession({ sessionId, userId, part, mode, setIds, script, mockId }: Props) {
   const { t } = useI18n();
   const examLike = mode !== "practice";
   const router = useRouter();
@@ -96,8 +96,8 @@ export function SpeakingSession({ sessionId, userId, part, mode, setIds, script 
     }
     recorder.current?.close();
     const q = res.ok ? "" : `?error=${res.error ?? "generic"}${res.detail ? `&detail=${encodeURIComponent(res.detail)}` : ""}`;
-    router.push(`/speaking/${sessionId}${q}`);
-  }, [router, sessionId]);
+    router.push(mockId ? "/mock" : `/speaking/${sessionId}${q}`);
+  }, [mockId, router, sessionId]);
 
   const startRecording = useCallback(async () => {
     stopSpeaking();
@@ -204,7 +204,7 @@ export function SpeakingSession({ sessionId, userId, part, mode, setIds, script 
       setPhase("idle");
       return;
     }
-    const res = await startSpeaking({ id: sessionId, part, mode, setIds });
+    const res = await startSpeaking({ id: sessionId, part, mode, setIds, mockId });
     if (!res.ok) {
       setError({ code: "generic" });
       setPhase("idle");

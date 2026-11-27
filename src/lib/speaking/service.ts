@@ -38,10 +38,11 @@ export type SpeakingRow = {
   feedback: SpeakingFeedback | null;
   attempt_id: string | null;
   duration_sec: number | null;
+  mock_id: string | null;
   created_at: string;
 };
 
-export const SPEAKING_COLUMNS = "id, part, mode, status, set_ids, answers, scores, feedback, attempt_id, duration_sec, created_at";
+export const SPEAKING_COLUMNS = "id, part, mode, status, set_ids, answers, scores, feedback, attempt_id, duration_sec, mock_id, created_at";
 
 async function usedSetIds(supabase: DB): Promise<Set<string>> {
   const { data } = await supabase.from("speaking_sessions").select("set_ids").eq("status", "scored").limit(1000);
@@ -156,7 +157,7 @@ export async function scoreSession(supabase: DB, profile: Profile, row: Speaking
   if (!attemptId) {
     const { data, error } = await supabase
       .from("attempts")
-      .insert({ skill: "speaking", type: row.mode === "diagnostic" ? "diagnostic" : row.mode === "exam" ? "timed" : "practice", band: scores.overall, duration_sec: duration, meta: { part: row.part, session_id: row.id } })
+      .insert({ skill: "speaking", type: row.mock_id ? "mock" : row.mode === "diagnostic" ? "diagnostic" : row.mode === "exam" ? "timed" : "practice", mock_id: row.mock_id, band: scores.overall, duration_sec: duration, meta: { part: row.part, session_id: row.id } })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
@@ -176,7 +177,7 @@ export async function scoreSession(supabase: DB, profile: Profile, row: Speaking
       supabase.rpc("log_error", { p_category: c.category, p_pattern: c.pattern, p_example: c.original, p_correction: c.fix, p_rule: c.rule || null, p_source: "speaking" }),
     ),
   );
-  await markPlanTaskDone(supabase, profile, PLAN_KINDS[row.part]);
+  if (!row.mock_id) await markPlanTaskDone(supabase, profile, PLAN_KINDS[row.part]);
   if (row.mode === "diagnostic") await afterDiagnostic(supabase, profile);
 }
 

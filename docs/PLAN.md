@@ -20,6 +20,6 @@ Supabase (auth, Postgres, Storage, RLS), Groq (LLM + Whisper) with Gemini fallba
 ## Build order
 - Day 1 ✅ auth, DB + RLS, onboarding, dashboard (countdown, streak, bands, trend, today), plan, settings
 - Day 2 ✅ Writing (aiClient, Task 1 visuals, exam mode, examiner scoring, corrections, Error Log feed)
-- Day 4 Speaking (Web Speech examiner, recording, Whisper, feedback, recordings history)
-- Day 5 Reading + Listening (+ diagnostic)
-- Day 6 Error Log, Vocabulary (SM-2), AI tutor, full mock exam
+- Day 4 ✅ Speaking (Web Speech examiner, WAV recording, Whisper/Gemini STT, feedback, recordings history)
+- Day 5 ✅ Reading + Listening (+ diagnostic)
+- Day 6 ✅ Error Log, Vocabulary (SM-2), AI tutor, full mock exam
