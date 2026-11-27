@@ -30,7 +30,8 @@ On your computer: **Node.js 20 or newer** (https://nodejs.org, the "LTS" button)
 
 1. Go to https://supabase.com/dashboard and click **New project**.
    - Name: `ielts-coach`. Database password: generate one and save it somewhere.
-   - Region: **Central EU (Frankfurt)** is the closest to Kazakhstan.
+   - Region: **Europe** → **Central EU (Frankfurt)**, the closest to Kazakhstan. The app's server on Vercel also
+     runs in Frankfurt (set in `vercel.json`), so the app and the database stay close.
 2. Wait about a minute for the project to start. Then open **SQL Editor → New query**.
 3. Open the folder `supabase/migrations/` in this project. For **each file, in name order**
    (`20261126000000_init.sql`, then `20261127000000_writing.sql`, …), copy **all** of it, paste it into the editor
