@@ -18,8 +18,8 @@ Everything runs on free tiers: Vercel, Supabase, Groq and Google Gemini.
 |---|---|---|
 | GitHub | stores the code; Vercel deploys from it | https://github.com |
 | Supabase | sign-in, database, audio storage | https://supabase.com |
-| Groq | main AI model and speech-to-text | https://console.groq.com |
-| Google AI Studio | backup AI model (Gemini) | https://aistudio.google.com |
+| Groq (optional) | faster AI and Whisper speech-to-text; skip it if the site doesn't open for you | https://console.groq.com |
+| Google AI Studio | Gemini AI: **enough on its own** | https://aistudio.google.com |
 | Vercel | hosts the website | https://vercel.com (sign in with GitHub) |
 
 On your computer: **Node.js 20 or newer** (https://nodejs.org, the "LTS" button) and **Git**.
@@ -99,7 +99,7 @@ GROQ_API_KEY=gsk_…                                      # from Step 2
 GROQ_MODEL=openai/gpt-oss-120b
 GROQ_STT_MODEL=whisper-large-v3-turbo
 GEMINI_API_KEY=…                                        # from Step 3
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=                                           # empty = newest Gemini Flash
 AI_MOCK=0
 ```
 
@@ -132,6 +132,16 @@ code uses them. The Supabase publishable key is meant to be public, because Row 
 It then opens like an app.
 
 ---
+
+## If the AI doesn't work
+
+Open **Settings → Check AI connection**. Each provider shows a green tick, or the exact reason it failed:
+- **API key not valid**: the key was copied incompletely. Create a new one and paste it in Vercel.
+- **model … not found**: that model id isn't available to your key. Pick one from the list under the error and put it
+  in `GEMINI_MODEL` or `GROQ_MODEL`, or leave `GEMINI_MODEL` empty.
+- **429 / quota**: the free daily limit is used up. It resets the next day.
+
+After changing a variable in Vercel, open **Deployments → ⋯ → Redeploy**, because Vercel only reads variables during a deploy.
 
 ## Using the app
 

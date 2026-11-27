@@ -8,20 +8,28 @@ import { useI18n } from "@/components/app/i18n-provider";
 import { deleteSubmission, rescoreWriting } from "@/app/(app)/writing/actions";
 import { AiErrorMessage } from "./ai-error";
 
-export function RescoreButton({ id, initialError }: { id: string; initialError?: string }) {
+export function RescoreButton({ id, initialError, initialDetail }: { id: string; initialError?: string; initialDetail?: string }) {
   const { t } = useI18n();
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState(initialError);
+  const [detail, setDetail] = useState(initialDetail);
   return (
     <div className="flex flex-col gap-3">
-      <AiErrorMessage code={error} />
+      <AiErrorMessage code={error} detail={detail} />
       <Button
         disabled={pending}
         onClick={() =>
           start(async () => {
-            const res = await rescoreWriting(id);
+            let res;
+            try {
+              res = await rescoreWriting(id);
+            } catch {
+              setError("down");
+              return;
+            }
             setError(res.error);
+            setDetail(res.detail);
             if (!res.error) router.replace(`/writing/${id}`);
           })
         }

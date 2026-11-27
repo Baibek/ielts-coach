@@ -13,12 +13,13 @@ const KEYS: Record<string, MessageKey> = {
   bad_prompt: "common.error",
 };
 
-export function AiErrorMessage({ code }: { code: string | undefined }) {
+export function AiErrorMessage({ code, detail }: { code: string | undefined; detail?: string }) {
   const { t } = useI18n();
   if (!code) return null;
   return (
     <p role="alert" data-testid="ai-error" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
       {t(KEYS[code] ?? "common.error")}
+      {detail && <span className="mt-1 block break-words font-mono text-xs opacity-80">{detail}</span>}
     </p>
   );
 }

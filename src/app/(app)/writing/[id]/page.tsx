@@ -71,7 +71,7 @@ export default async function WritingResultPage({ params, searchParams }: PagePr
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">{t("writing.pendingBody")}</p>
-            <RescoreButton id={sub.id} initialError={typeof sp.error === "string" ? sp.error : undefined} />
+            <RescoreButton id={sub.id} initialError={typeof sp.error === "string" ? sp.error : undefined} initialDetail={typeof sp.detail === "string" ? sp.detail : undefined} />
           </CardContent>
         </Card>
       ) : (

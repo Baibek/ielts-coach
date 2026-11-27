@@ -47,6 +47,7 @@ export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState<number | null>(null);
   const [error, setError] = useState<string | undefined>();
+  const [detail, setDetail] = useState<string | undefined>();
   const [pending, start] = useTransition();
   const submitted = useRef(false);
 
@@ -80,13 +81,23 @@ export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "
       submitted.current = true;
       setError(undefined);
       start(async () => {
-        const res = await submitWriting({ promptId: prompt.id, mode, text, durationSec: Math.round(elapsed) });
+        let res;
+        try {
+          res = await submitWriting({ promptId: prompt.id, mode, text, durationSec: Math.round(elapsed) });
+        } catch {
+          // Network drop or server time-out: the text is still in the draft.
+          submitted.current = false;
+          setError("down");
+          return;
+        }
         if (res.id) {
           writeDraft(draftKey, null);
-          router.push(`/writing/${res.id}${res.error ? `?error=${res.error}` : ""}`);
+          const q = res.error ? `?error=${res.error}${res.detail ? `&detail=${encodeURIComponent(res.detail)}` : ""}` : "";
+          router.push(`/writing/${res.id}${q}`);
         } else {
           submitted.current = false;
           setError(res.error ?? "generic");
+          setDetail(res.detail);
         }
       });
     },
@@ -124,7 +135,7 @@ export function WritingEditor({ prompt, mode }: { prompt: WritingPrompt; mode: "
         {timeUp && (
           <p role="status" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">{t("writing.timeUp")}</p>
         )}
-        <AiErrorMessage code={error} />
+        <AiErrorMessage code={error} detail={detail} />
 
         <textarea
           lang="en"

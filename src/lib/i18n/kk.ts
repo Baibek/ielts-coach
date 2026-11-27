@@ -222,4 +222,12 @@ export const kk: Dict = {
   "settings.feedbackLangHint": "Дәйексөздер, түзетулер және Band 8 нұсқалары әрқашан ағылшынша қалады.",
   "settings.sameAsUi": "Интерфейс тілімен бірдей",
   "common.delete": "Жою",
+  "settings.aiCheck": "AI байланысын тексеру",
+  "settings.aiChecking": "Тексерілуде…",
+  "settings.aiNoKey": "кілт қойылмаған (міндетті емес)",
+  "settings.aiModelMissing": "Бұл модель кілтіңізге қолжетімді емес. Төмендегі тізімнен біреуін таңдап, Vercel-де қойыңыз.",
+  "settings.aiModels": "Кілтіңізге қолжетімді модельдер",
+  "settings.aiMock": "Тест режимі (AI_MOCK=1): шынайы AI шақырылмайды.",
+  "settings.aiStt": "Дауысты мәтінге айналдыру",
+  "settings.lastError": "Соңғы қате",
 };

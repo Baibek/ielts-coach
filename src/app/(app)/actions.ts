@@ -113,3 +113,9 @@ export async function setFeedbackLang(value: string): Promise<void> {
   await supabase.from("profiles").update({ feedback_lang }).eq("id", profile.id);
   revalidatePath("/settings");
 }
+
+export async function runAiCheck() {
+  await getSession(); // signed-in users only
+  const { checkAi } = await import("@/lib/ai/check");
+  return checkAi();
+}

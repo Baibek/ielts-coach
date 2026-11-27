@@ -149,7 +149,7 @@ export async function scoreSubmission(supabase: DB, profile: Profile, sub: Submi
     system: scoringSystemPrompt(sub.task, language),
     user: scoringUserPrompt(sub.prompt, sub.text, wordCount),
     schema: WritingScore,
-    maxTokens: 6000,
+    maxTokens: 4000,
     temperature: 0.1,
     effort: "medium",
     mock: () => mockScore(sub.text),

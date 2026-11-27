@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getSession } from "@/lib/data/queries";
-import { aiErrorCode, type AiErrorCode } from "@/lib/ai/server";
+import { aiErrorCode, aiErrorDetail, type AiErrorCode } from "@/lib/ai/server";
 import { countWords } from "@/lib/writing/scoring";
 import {
   generatePrompt, getPromptById, scoreSubmission, SUBMISSION_COLUMNS, type SubmissionRow,
@@ -17,7 +17,7 @@ const SubmitInput = z.object({
   durationSec: z.number().int().min(0).max(4 * 3600),
 });
 
-export type SubmitResult = { id?: string; error?: AiErrorCode | "too_short" | "bad_prompt" | "generic" };
+export type SubmitResult = { id?: string; error?: AiErrorCode | "too_short" | "bad_prompt" | "generic"; detail?: string };
 
 export async function submitWriting(input: z.infer<typeof SubmitInput>): Promise<SubmitResult> {
   const parsed = SubmitInput.safeParse(input);
@@ -49,7 +49,7 @@ export async function submitWriting(input: z.infer<typeof SubmitInput>): Promise
     await scoreSubmission(supabase, profile, sub);
   } catch (e) {
     console.error("writing score failed", e);
-    return { id: sub.id, error: aiErrorCode(e) ?? "generic" };
+    return { id: sub.id, error: aiErrorCode(e) ?? "generic", detail: aiErrorDetail(e) };
   } finally {
     revalidatePath("/writing");
     revalidatePath("/");
@@ -65,7 +65,7 @@ export async function rescoreWriting(id: string): Promise<SubmitResult> {
     await scoreSubmission(supabase, profile, sub);
   } catch (e) {
     console.error("writing rescore failed", e);
-    return { id, error: aiErrorCode(e) ?? "generic" };
+    return { id, error: aiErrorCode(e) ?? "generic", detail: aiErrorDetail(e) };
   }
   revalidatePath(`/writing/${id}`);
   revalidatePath("/writing");
@@ -73,7 +73,7 @@ export async function rescoreWriting(id: string): Promise<SubmitResult> {
   return { id };
 }
 
-export type GenerateResult = { error?: AiErrorCode | "generic" };
+export type GenerateResult = { error?: AiErrorCode | "generic"; detail?: string };
 
 export async function generateWritingPrompt(task: "task1" | "task2", mode: "practice" | "exam"): Promise<GenerateResult> {
   const { supabase } = await getSession();
@@ -82,7 +82,7 @@ export async function generateWritingPrompt(task: "task1" | "task2", mode: "prac
     id = await generatePrompt(supabase, task);
   } catch (e) {
     console.error("generate prompt failed", e);
-    return { error: aiErrorCode(e) ?? "generic" };
+    return { error: aiErrorCode(e) ?? "generic", detail: aiErrorDetail(e) };
   }
   redirect(`/writing?task=${task}&mode=${mode}&pid=${encodeURIComponent(id)}`);
 }

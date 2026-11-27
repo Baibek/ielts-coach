@@ -11,6 +11,7 @@ export function GenerateButton({ task, mode, variant = "outline" }: { task: "tas
   const { t } = useI18n();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string>();
+  const [detail, setDetail] = useState<string>();
   return (
     <div className="flex flex-col gap-2">
       <Button
@@ -19,15 +20,23 @@ export function GenerateButton({ task, mode, variant = "outline" }: { task: "tas
         onClick={() =>
           start(async () => {
             setError(undefined);
-            const res = await generateWritingPrompt(task, mode);
-            if (res?.error) setError(res.error);
+            try {
+              const res = await generateWritingPrompt(task, mode);
+              if (res?.error) {
+                setError(res.error);
+                setDetail(res.detail);
+              }
+            } catch (e) {
+              // redirect() after success is delivered as navigation, not an error
+              if (!String(e).includes("NEXT_REDIRECT")) setError("down");
+            }
           })
         }
       >
         <Sparkles />
         {pending ? t("writing.generating") : t("writing.generate")}
       </Button>
-      <AiErrorMessage code={error} />
+      <AiErrorMessage code={error} detail={detail} />
     </div>
   );
 }

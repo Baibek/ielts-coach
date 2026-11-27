@@ -10,15 +10,17 @@ export async function usageToday(
   supabase: Awaited<ReturnType<typeof createClient>>,
   timeZone: string,
   today: string,
-): Promise<Map<string, UsageSummary>> {
+): Promise<{ usage: Map<string, UsageSummary>; lastError: string | null }> {
   const since = new Date(Date.now() - 36 * 3600 * 1000).toISOString();
   const { data } = await supabase
     .from("ai_usage")
-    .select("provider, tokens_in, tokens_out, ok, created_at")
+    .select("provider, tokens_in, tokens_out, ok, error, created_at")
     .gte("created_at", since)
     .limit(5000);
   const usage = new Map<string, UsageSummary>();
-  for (const r of (data ?? []) as AiUsageRow[]) {
+  let lastError: { at: string; text: string } | null = null;
+  for (const r of (data ?? []) as Array<AiUsageRow & { error: string | null }>) {
+    if (!r.ok && r.error && (!lastError || r.created_at > lastError.at)) lastError = { at: r.created_at, text: r.error };
     if (dateInTz(r.created_at, timeZone) !== today) continue;
     const u = usage.get(r.provider) ?? { calls: 0, failed: 0, tin: 0, tout: 0 };
     u.calls++;
@@ -27,5 +29,5 @@ export async function usageToday(
     u.tout += r.tokens_out;
     usage.set(r.provider, u);
   }
-  return usage;
+  return { usage, lastError: lastError?.text ?? null };
 }

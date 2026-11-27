@@ -222,6 +222,14 @@ export const en = {
   "settings.feedbackLangHint": "Quotes, corrections and Band 8 rewrites always stay in English.",
   "settings.sameAsUi": "Same as interface",
   "common.delete": "Delete",
+  "settings.aiCheck": "Check AI connection",
+  "settings.aiChecking": "Checking…",
+  "settings.aiNoKey": "no key set (optional)",
+  "settings.aiModelMissing": "This model id is not available for your key. Pick one from the list below and set it in Vercel.",
+  "settings.aiModels": "Models available with your key",
+  "settings.aiMock": "Test mode (AI_MOCK=1): real AI is not called.",
+  "settings.aiStt": "Speech-to-text",
+  "settings.lastError": "Last error",
 } as const;
 
 export type MessageKey = keyof typeof en;

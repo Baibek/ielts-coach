@@ -222,4 +222,12 @@ export const ru: Dict = {
   "settings.feedbackLangHint": "Цитаты, исправления и версии Band 8 всегда остаются на английском.",
   "settings.sameAsUi": "Как язык интерфейса",
   "common.delete": "Удалить",
+  "settings.aiCheck": "Проверить подключение AI",
+  "settings.aiChecking": "Проверка…",
+  "settings.aiNoKey": "ключ не задан (необязательно)",
+  "settings.aiModelMissing": "Эта модель недоступна для вашего ключа. Выберите из списка ниже и укажите её в Vercel.",
+  "settings.aiModels": "Модели, доступные для вашего ключа",
+  "settings.aiMock": "Тестовый режим (AI_MOCK=1): настоящий AI не вызывается.",
+  "settings.aiStt": "Распознавание речи",
+  "settings.lastError": "Последняя ошибка",
 };

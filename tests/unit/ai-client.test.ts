@@ -56,6 +56,7 @@ describe("aiClient", () => {
     await expect(ai.json(req)).resolves.toEqual({ band: 6 });
     expect(calls).toEqual(["groq", "gemini"]);
     expect(log.map((l) => [l.provider, l.ok])).toEqual([["groq", false], ["gemini", true]]);
+    expect(log[0].error).toContain("429");
   });
 
   it("retries Groq once on 5xx, then falls back to Gemini", async () => {
@@ -100,6 +101,71 @@ describe("aiClient", () => {
     const r = new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "thinking", thought: true }, { text: "Hello" }] } }] }), { status: 200 });
     const { ai } = setup([status(429), r]);
     await expect(ai.text({ feature: "chat", messages: [{ role: "user", content: "hi" }] })).resolves.toBe("Hello");
+  });
+});
+
+describe("aiClient error handling", () => {
+  it("treats an unknown model or bad key as a config problem and moves on", async () => {
+    const notFound = new Response(JSON.stringify({ error: { message: "The model `x` does not exist" } }), { status: 404 });
+    const { ai, calls } = setup([notFound, geminiReply('{"band": 7}')]);
+    await expect(ai.json(req)).resolves.toEqual({ band: 7 });
+    expect(calls).toEqual(["groq", "gemini"]);
+  });
+
+  it("reports config with readable details when every provider rejects the request", async () => {
+    const bad = () => new Response(JSON.stringify({ error: { message: "API key not valid" } }), { status: 400 });
+    const { ai } = setup([bad(), bad()]);
+    const err = await ai.json(req).catch((e) => e);
+    expect(err).toBeInstanceOf(AiUnavailableError);
+    expect(err.reason).toBe("config");
+    expect(err.details.join(" ")).toContain("API key not valid");
+  });
+
+  it("works with Gemini only (no Groq key) and leaves room for thinking tokens", async () => {
+    const calls: RequestInit[] = [];
+    const ai = createAi({
+      providers: [{ ...groq, apiKey: "" }, gemini],
+      fetch: (async (_u: string, init: RequestInit) => {
+        calls.push(init);
+        return geminiReply('{"band": 6}');
+      }) as unknown as typeof fetch,
+    });
+    await expect(ai.json({ ...req, maxTokens: 3000 })).resolves.toEqual({ band: 6 });
+    const body = JSON.parse(calls[0].body as string);
+    expect(body.generationConfig.maxOutputTokens).toBe(8192);
+    expect(body.generationConfig.responseMimeType).toBe("application/json");
+  });
+
+  it("asks for a shorter answer when the first reply was cut off", async () => {
+    const cut = new Response(JSON.stringify({ candidates: [{ finishReason: "MAX_TOKENS", content: { parts: [{ text: '{"band": ' }] } }] }), { status: 200 });
+    const bodies: string[] = [];
+    const replies = [cut, geminiReply('{"band": 5}')];
+    const ai = createAi({
+      providers: [gemini],
+      fetch: (async (_u: string, init: RequestInit) => {
+        bodies.push(init.body as string);
+        return replies.shift()!;
+      }) as unknown as typeof fetch,
+    });
+    await expect(ai.json(req)).resolves.toEqual({ band: 5 });
+    expect(JSON.parse(bodies[1]).contents.at(-1).parts[0].text).toMatch(/cut off.*shorter/);
+  });
+
+  it("stops trying when the time budget is used up", async () => {
+    let t = 0;
+    const ai = createAi({
+      providers: [groq, gemini],
+      now: () => t,
+      sleep: async () => {},
+      budgetMs: 10_000,
+      fetch: (async () => {
+        t += 7_000;
+        return new Response("down", { status: 503 });
+      }) as unknown as typeof fetch,
+    });
+    const err = await ai.json(req).catch((e) => e);
+    expect(err.reason).toBe("down");
+    expect(err.details.join(" ")).toContain("time limit");
   });
 });
 

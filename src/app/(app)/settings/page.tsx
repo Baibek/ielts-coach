@@ -8,6 +8,7 @@ import { ExamForm } from "@/components/app/exam-form";
 import { LanguageSwitch } from "@/components/app/language-switch";
 import { ThemeSwitch } from "@/components/app/theme-switch";
 import { FeedbackLangSelect } from "@/components/app/feedback-lang-select";
+import { AiCheck } from "@/components/app/ai-check";
 import { setLocale, updateExamSettings } from "../actions";
 import { signOut } from "@/app/login/actions";
 
@@ -16,7 +17,7 @@ export default async function SettingsPage() {
   const t = makeT(getDict(profile.locale));
   const today = todayIn(profile.timezone);
 
-  const usage = await usageToday(supabase, profile.timezone, today);
+  const { usage, lastError } = await usageToday(supabase, profile.timezone, today);
   const providers = ["groq", "gemini", ...(usage.has("mock") ? ["mock"] : [])];
 
   return (
@@ -90,6 +91,14 @@ export default async function SettingsPage() {
               })}
             </tbody>
           </table>
+          {lastError && (
+            <p className="mt-3 break-words text-xs text-danger">
+              <b>{t("settings.lastError")}:</b> <span className="font-mono">{lastError}</span>
+            </p>
+          )}
+          <div className="mt-4">
+            <AiCheck />
+          </div>
         </CardContent>
       </Card>
 
