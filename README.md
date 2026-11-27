@@ -6,8 +6,8 @@ Russian and English. Exam content is in English.
 
 Everything runs on free tiers: Vercel, Supabase, Groq and Google Gemini.
 
-> **Status:** Day 1 is done: sign-in, database, dashboard, study plan, settings.
-> Writing, Speaking, Reading, Listening, Error Log, Vocabulary, Tutor and Mock exam come next.
+> **Status:** Days 1–2 are done: sign-in, database, dashboard, study plan, settings, and the **Writing** module.
+> Speaking, Reading, Listening, Error Log, Vocabulary, Tutor and Mock exam come next.
 > Their pages show "Coming soon" until then.
 
 ---
@@ -32,8 +32,10 @@ On your computer: **Node.js 20 or newer** (https://nodejs.org, the "LTS" button)
    - Name: `ielts-coach`. Database password: generate one and save it somewhere.
    - Region: **Central EU (Frankfurt)** is the closest to Kazakhstan.
 2. Wait about a minute for the project to start. Then open **SQL Editor → New query**.
-3. Open the file `supabase/migrations/20261126000000_init.sql` from this project, copy **all** of it,
-   paste it into the editor and press **Run**. You should see "Success. No rows returned".
+3. Open the folder `supabase/migrations/` in this project. For **each file, in name order**
+   (`20261126000000_init.sql`, then `20261127000000_writing.sql`, …), copy **all** of it, paste it into the editor
+   and press **Run**. You should see "Success. No rows returned" each time.
+   When a later update adds a new file to this folder, run just that new file the same way.
 4. Open **Project Settings → API Keys** and copy:
    - **Project URL** (looks like `https://abcd.supabase.co`). It's under *Project Settings → Data API*.
    - **Publishable key** (starts with `sb_publishable_`). On older projects this is the `anon` key; that works too.
@@ -139,7 +141,19 @@ It then opens like an app.
   - Weeks 1–2: skills and strategies. Weeks 3–4: timed practice on weak skills.
   - Weeks 5–6: full mock tests (1 in week 5, 2 in week 6) plus error review. The last 2 days are light.
   - The plan rebuilds itself every week from your latest results. **Rebuild plan now** does it immediately.
-- **Settings:** language, light/dark theme, exam details, today's AI usage per provider, sign out.
+- **Writing:**
+  - Choose Task 1 or Task 2, in **Practice** (no time limit) or **Exam mode** (20/40-minute timer, no spellcheck).
+    In exam mode your answer is sent automatically when time runs out, like the computer-delivered test.
+  - Task 1 shows bar, line and pie charts, tables, process diagrams and before/after maps.
+  - 24 built-in tasks work without AI. **New task from AI** creates fresh ones, which are saved and reused.
+  - The AI examiner scores the four official criteria with quotes from your text. The same exam rules are always
+    applied on top: too few words or an off-topic answer caps the score.
+  - You get inline corrections (tap a highlighted phrase), two paragraphs rewritten at Band 8, and the top 3 things
+    to fix. Your mistakes are grouped by type in the Error Log.
+  - If the AI limit is reached, your answer is still saved. Press **Score now** later.
+  - Your draft is kept on the device, so a reload doesn't lose it.
+- **Settings:** language, light/dark theme, language of AI explanations, exam details, today's AI usage per provider,
+  sign out.
 
 ## For developers
 
@@ -147,7 +161,10 @@ It then opens like an app.
 npm test
 ```
 
-Unit tests cover band rounding, raw-score→band tables, the plan engine, streaks and the trend chart.
+Unit tests cover band rounding, raw-score→band tables, the plan engine, streaks, the trend chart, the AI client
+(Groq → Gemini fallback, retries, JSON repair) and the Writing scoring rules.
+
+To try the app without AI keys, set `AI_MOCK=1` in `.env.local`. You'll get fake feedback, clearly labelled as such.
 
 ```bash
 npm run lint

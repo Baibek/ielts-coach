@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ExamForm } from "@/components/app/exam-form";
 import { LanguageSwitch } from "@/components/app/language-switch";
 import { ThemeSwitch } from "@/components/app/theme-switch";
+import { FeedbackLangSelect } from "@/components/app/feedback-lang-select";
 import { setLocale, updateExamSettings } from "../actions";
 import { signOut } from "@/app/login/actions";
 
@@ -31,6 +32,13 @@ export default async function SettingsPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm font-medium">{t("settings.theme")}</span>
             <ThemeSwitch />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{t("settings.feedbackLang")}</span>
+              <span className="text-xs text-muted-foreground">{t("settings.feedbackLangHint")}</span>
+            </div>
+            <FeedbackLangSelect value={profile.feedback_lang} />
           </div>
         </CardContent>
       </Card>

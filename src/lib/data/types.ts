@@ -7,6 +7,7 @@ export type Profile = {
   email: string | null;
   display_name: string | null;
   locale: Locale;
+  feedback_lang: Locale | null;
   timezone: string;
   exam_date: string | null;
   target_band: number;

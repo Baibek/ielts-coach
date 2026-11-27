@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SKILLS } from "@/lib/ielts/bands";
 import { currentBands } from "@/lib/ielts/skill-bands";
-import { buildPlan } from "@/lib/plan/engine";
+import { buildPlan, type TaskKind } from "@/lib/plan/engine";
 import { daysBetween, todayIn } from "@/lib/dates";
 import type { AttemptRow, Profile, StudyPlanRow } from "./types";
 
@@ -17,7 +17,7 @@ export const getSession = cache(async () => {
   if (!data.user) redirect("/login");
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, email, display_name, locale, timezone, exam_date, target_band, start_level, onboarded_at")
+    .select("id, email, display_name, locale, feedback_lang, timezone, exam_date, target_band, start_level, onboarded_at")
     .eq("id", data.user.id)
     .single<Profile>();
   if (error || !profile) throw new Error("Profile not found: " + (error?.message ?? "missing row"));
@@ -110,4 +110,23 @@ export async function ensurePlan(
     daysBetween(plan.start_date, today) >= 7 ||
     daysBetween(plan.start_date, today) < 0;
   return stale ? rebuildPlan(supabase, profile, attempts, plan) : plan;
+}
+
+/**
+ * Tick the first not-yet-done task of one of these kinds in today's plan
+ * (called automatically when a practice item is finished).
+ */
+export async function markPlanTaskDone(supabase: DB, profile: Profile, kinds: TaskKind[]): Promise<void> {
+  const plan = await getLatestPlan(supabase);
+  if (!plan) return;
+  const today = todayIn(profile.timezone);
+  const day = plan.days.find((d) => d.date === today);
+  if (!day) return;
+  for (const kind of kinds) {
+    const task = day.tasks.find((t) => t.kind === kind && !plan.done_keys.includes(t.key));
+    if (task) {
+      await supabase.from("study_plan").update({ done_keys: [...plan.done_keys, task.key] }).eq("id", plan.id);
+      return;
+    }
+  }
 }

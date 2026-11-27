@@ -27,6 +27,26 @@
   --series-speaking: #f2a600;
   --chart-grid: #e7e5df;
   --chart-axis: #8a8f95;
+
+  /* Categorical slots for Task 1 charts (fixed order) */
+  --cat-1: #257de0;
+  --cat-2: #f47230;
+  --cat-3: #00b894;
+  --cat-4: #f2a600;
+  --cat-5: #ee7fac;
+  --cat-6: #008a17;
+
+  /* Task 1 map surfaces */
+  --map-bg: #fbfaf7;
+  --map-water: #cfe2f5;
+  --map-road: #dcd8cf;
+  --map-park: #d6eccc;
+  --map-field: #eef2d4;
+  --map-trees: #b7d7a6;
+  --map-building: #cbc6bb;
+  --map-car_park: #e7e4dc;
+  --map-other: #e9e6df;
+  --map-stroke: #8f8a80;
 }
 
 .dark {
@@ -52,6 +72,24 @@
   --series-speaking: #d28e05;
   --chart-grid: #2a3034;
   --chart-axis: #7d858b;
+
+  --cat-1: #338ced;
+  --cat-2: #e76624;
+  --cat-3: #00a888;
+  --cat-4: #d28e05;
+  --cat-5: #e24d8b;
+  --cat-6: #0aac23;
+
+  --map-bg: #15191c;
+  --map-water: #1d3850;
+  --map-road: #3a4045;
+  --map-park: #22392a;
+  --map-field: #2e3824;
+  --map-trees: #2a4a2f;
+  --map-building: #4a4f56;
+  --map-car_park: #30363b;
+  --map-other: #2a3034;
+  --map-stroke: #6f777d;
 }
 
 @theme inline {
@@ -90,4 +128,9 @@ body {
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+@keyframes progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
 }

@@ -106,3 +106,10 @@ export async function setLocalePublic(locale: string): Promise<void> {
   await setLocaleCookie(locale);
   revalidatePath("/login");
 }
+
+export async function setFeedbackLang(value: string): Promise<void> {
+  const { supabase, profile } = await getSession();
+  const feedback_lang = isLocale(value) ? value : null;
+  await supabase.from("profiles").update({ feedback_lang }).eq("id", profile.id);
+  revalidatePath("/settings");
+}

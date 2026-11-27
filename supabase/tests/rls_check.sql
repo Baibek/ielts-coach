@@ -17,8 +17,8 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
 
 insert into public.attempts (skill, band) values ('writing', 6.0);
-select public.log_error('grammar', 'He go  to school', 'He goes to school', 'subject-verb agreement', 'writing');
-select public.log_error('grammar', 'he go to school', 'He goes to school', null, 'writing');
+select public.log_error('grammar', 'Subject-verb agreement', 'He go  to school', 'He goes to school', 'third person -s', 'writing');
+select public.log_error('grammar', 'subject-verb  agreement', 'She play tennis', 'She plays tennis', null, 'writing');
 
 do $$ begin
   if (select count from public.error_log where category = 'grammar') <> 2 then raise exception 'log_error did not dedupe'; end if;
